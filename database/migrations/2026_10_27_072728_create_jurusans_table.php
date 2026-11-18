@@ -1,29 +1,39 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Http\Controllers;
 
-return new class extends Migration
+use Illuminate\Http\Request;
+use App\Models\Jurusan;
+
+class JurusanController extends Controller
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    // Menampilkan daftar jurusan (Read)
+    public function index()
     {
-        Schema::create('jurusans', function (Blueprint $table) {
-            $table->id();
-            $table->string('kode', 5)->unique();
-            $table->string('nama', 100);
-            $table->timestamps();
-        });
+        $jurusans = Jurusan::all();
+        return view('jurusan.index', compact('jurusans'));
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    // Menampilkan form tambah jurusan (Create form)
+    public function create()
     {
-        Schema::dropIfExists('jurusans');
+        return view('jurusan.create');
     }
-};
+
+    // Menyimpan data jurusan baru ke database
+    public function store(Request $request)
+    {
+        $request->validate([
+            'kode' => 'required|string|max:20|unique:jurusans,kode',
+            'nama' => 'required|string|max:100',
+        ]);
+
+        Jurusan::create([
+            'kode' => $request->kode,
+            'nama' => $request->nama,
+        ]);
+
+        return redirect()->route('jurusan.index')
+            ->with('success', 'Data jurusan berhasil ditambahkan.');
+    }
+}
